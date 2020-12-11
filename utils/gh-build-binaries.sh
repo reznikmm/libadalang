@@ -2,8 +2,12 @@
           set -x -e
           DEBUG=$1  # Value is '' or 'debug'
           RUNNER_OS=$2  #  ${{ runner.os }} is Linux, Windiws, maxOS
-          export PROCESSORS=0
           export prefix=/tmp/ADALIB_DIR
+          if [ $RUNNER_OS = Windows ]; then
+             export prefix=/opt/ADALIB_DIR
+             mount `cmd /c cd | cut -d\: -f1`:/opt /opt
+          fi
+          export PROCESSORS=0
           export GPR_PROJECT_PATH=$prefix/share/gpr
           export CPATH=/usr/local/include:/mingw64/include
           export LIBRARY_PATH=/usr/local/lib:/mingw64/lib
