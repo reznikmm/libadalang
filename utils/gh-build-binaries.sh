@@ -11,6 +11,8 @@
           pip install -r langkit/REQUIREMENTS.dev
           pip install jsonschema
           pip install langkit/
+          gprinstall --uninstall gnatcoll
+          gprinstall --uninstall gpr
 
           make -C gprbuild prefix=$prefix BUILD=${DEBUG:-production} GPRBUILD_OPTIONS="-cargs:C -Dst_mtim=st_mtimespec -gargs" libgpr.build.{shared,static} libgpr.install.{shared,static}
           BUILD=`echo $DEBUG| tr [a-z] [A-Z]`  # Convert to uppercase

@@ -3,6 +3,7 @@ on:
     branches:
       - master
       - stable
+      - gh_action
 name: Build binaries
 jobs:
   build:
