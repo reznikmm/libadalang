@@ -42,8 +42,8 @@
           rm -rf build
           # The gprbuild losts -lgmp on MacOS X, provide it in .cgpr file:
           gprconfig --batch -o /tmp/file.cgpr --config=c --config=ada
-          if [ $RUNNER_OS = macOS ]; then
-            sed -i -e '/for Shared_Library_Minimum_Switches use/s/$/ ("-lgmp") \&/' /tmp/file.cgpr
+          if [ $RUNNER_OS != Linux ]; then
+            sed -i -e '/for Shared_Library_Minimum_Switches use/s/use/use ("-lgmp") \&/' /tmp/file.cgpr
             cat /tmp/file.cgpr
           fi
           ./manage.py generate
