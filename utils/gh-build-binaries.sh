@@ -47,6 +47,6 @@
             cat /tmp/file.cgpr
           fi
           ./manage.py generate
-          ./manage.py build --library-types=relocatable --build-mode ${BUILD:-prod} --gargs=--config=/tmp/file.cgpr
+          ./manage.py build --library-types=relocatable --build-mode ${BUILD:-prod} --gargs=--config=/tmp/file.cgpr -v
           ./manage.py install --library-types=relocatable --build-mode ${BUILD:-prod} $prefix
           tar czf libadalang-`basename $GITHUB_REF`-$RUNNER_OS${DEBUG:+-dbg}.tar.gz -C $prefix .
