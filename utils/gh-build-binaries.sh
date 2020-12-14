@@ -12,6 +12,8 @@
           export CPATH=/usr/local/include:/mingw64/include
           export LIBRARY_PATH=/usr/local/lib:/mingw64/lib
           export DYLD_LIBRARY_PATH=/usr/local/lib
+          #LIBRARY_TYPES="relocatable,static"
+          LIBRARY_TYPES="static"
           pip install -r langkit/REQUIREMENTS.dev
           pip install jsonschema
           pip install langkit/
@@ -20,15 +22,15 @@
 
           make -C gprbuild prefix=$prefix BUILD=${DEBUG:-production} GPRBUILD_OPTIONS="-cargs:C -Dst_mtim=st_mtimespec -gargs" libgpr.build.{shared,static} libgpr.install.{shared,static}
           BUILD=`echo $DEBUG| tr [a-z] [A-Z]`  # Convert to uppercase
-          make -C gnatcoll-core prefix=$prefix BUILD=${BUILD:-PROD} LIBRARY_TYPES="relocatable static" build install
-          python gnatcoll-bindings/iconv/setup.py build ${DEBUG:+--debug} -j0 --prefix=$prefix --library-types=relocatable,static
+          make -C gnatcoll-core prefix=$prefix BUILD=${BUILD:-PROD} LIBRARY_TYPES="${LIBRARY_TYPES/,/ }" build install
+          python gnatcoll-bindings/iconv/setup.py build ${DEBUG:+--debug} -j0 --prefix=$prefix --library-types=$LIBRARY_TYPES
           python gnatcoll-bindings/iconv/setup.py install
-          python gnatcoll-bindings/gmp/setup.py build ${DEBUG:+--debug} -j0 --prefix=$prefix --library-types=relocatable,static
+          python gnatcoll-bindings/gmp/setup.py build ${DEBUG:+--debug} -j0 --prefix=$prefix --library-types=$LIBRARY_TYPES
           python gnatcoll-bindings/gmp/setup.py install
 
           eval `langkit/manage.py setenv`
-          langkit/manage.py build-langkit-support --library-types static,relocatable
-          langkit/manage.py install-langkit-support $prefix --library-types static,relocatable
+          langkit/manage.py build-langkit-support --library-types $LIBRARY_TYPES
+          langkit/manage.py install-langkit-support $prefix --library-types $LIBRARY_TYPES
 
           BUILD=${DEBUG:+dev}  # Convert debug to dev
           # Build libadalang static library
@@ -38,15 +40,17 @@
           gprinstall --uninstall --prefix=$prefix mains.gpr
           tar czf libadalang-`basename $GITHUB_REF`-$RUNNER_OS${DEBUG:+-dbg}-static.tar.gz -C $prefix .
           # Build libadalang relocatable library
-          gprinstall --uninstall --prefix=$prefix libadalang.gpr
-          rm -rf build
-          # The gprbuild losts -lgmp on MacOS X, provide it in .cgpr file:
-          gprconfig --batch -o /tmp/file.cgpr --config=c --config=ada
-          if [ $RUNNER_OS != Linux ]; then
-            sed -i -e '/for Shared_Library_Minimum_Switches use/s/use/use ("-lgmp") \&/' /tmp/file.cgpr
-            cat /tmp/file.cgpr
+          if [ "$LIBRARY_TYPES" != static ]; then
+            gprinstall --uninstall --prefix=$prefix libadalang.gpr
+            rm -rf build
+            # The gprbuild losts -lgmp on MacOS X, provide it in .cgpr file:
+            gprconfig --batch -o /tmp/file.cgpr --config=c --config=ada
+            if [ $RUNNER_OS = macOS ]; then
+              sed -i -e '/for Shared_Library_Minimum_Switches use/s/use/use ("-lgmp") \&/' /tmp/file.cgpr
+              cat /tmp/file.cgpr
+            fi
+            ./manage.py generate
+            ./manage.py build --library-types=relocatable --build-mode ${BUILD:-prod} --gargs=--config=/tmp/file.cgpr
+            ./manage.py install --library-types=relocatable --build-mode ${BUILD:-prod} $prefix
+            tar czf libadalang-`basename $GITHUB_REF`-$RUNNER_OS${DEBUG:+-dbg}.tar.gz -C $prefix .
           fi
-          ./manage.py generate
-          ./manage.py build --library-types=relocatable --build-mode ${BUILD:-prod} --gargs=--config=/tmp/file.cgpr -v
-          ./manage.py install --library-types=relocatable --build-mode ${BUILD:-prod} $prefix
-          tar czf libadalang-`basename $GITHUB_REF`-$RUNNER_OS${DEBUG:+-dbg}.tar.gz -C $prefix .
