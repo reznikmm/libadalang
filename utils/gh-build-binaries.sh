@@ -38,7 +38,7 @@
           ./manage.py build --library-types=static --build-mode ${BUILD:-prod}
           ./manage.py install --library-types=static --build-mode ${BUILD:-prod} $prefix
           gprinstall --uninstall --prefix=$prefix mains.gpr
-          tar czf libadalang-`basename $GITHUB_REF`-$RUNNER_OS${DEBUG:+-dbg}-static.tar.gz -C $prefix .
+          tar czf libadalang-$RUNNER_OS-`basename $GITHUB_REF`${DEBUG:+-dbg}-static.tar.gz -C $prefix .
           # Build libadalang relocatable library
           if [ "$LIBRARY_TYPES" != static ]; then
             gprinstall --uninstall --prefix=$prefix libadalang.gpr
@@ -52,5 +52,5 @@
             ./manage.py generate
             ./manage.py build --library-types=relocatable --build-mode ${BUILD:-prod} --gargs=--config=/tmp/file.cgpr
             ./manage.py install --library-types=relocatable --build-mode ${BUILD:-prod} $prefix
-            tar czf libadalang-`basename $GITHUB_REF`-$RUNNER_OS${DEBUG:+-dbg}.tar.gz -C $prefix .
+            tar czf libadalang-$RUNNER_OS-`basename $GITHUB_REF`${DEBUG:+-dbg}.tar.gz -C $prefix .
           fi

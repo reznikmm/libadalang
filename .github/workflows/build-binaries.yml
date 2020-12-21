@@ -73,7 +73,7 @@ jobs:
         if: ${{ runner.os != 'Windows' }}
         run: utils/gh-build-binaries.sh "${{ matrix.debug }}" ${{ runner.os }}
       - name: Upload tar-ball to Bintray
-        uses: reznikmm/upload-bintray-action@master
+        uses: reznikmm/upload-bintray-action@v4
         with:
           subject: reznikmm
           username: reznikmm
