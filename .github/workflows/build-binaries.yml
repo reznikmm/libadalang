@@ -3,6 +3,7 @@ on:
     branches:
       - master
       - stable
+      - macos_ce2021
 name: Build binaries
 jobs:
   build:
@@ -11,7 +12,7 @@ jobs:
     # The only purpose of this workflow is to upload builds, so do not run it
     # in contexts when upload is impossible: only the official repository has
     # the secrets to upload binaries to Bintray.
-    if: ${{ github.repository == 'AdaCore/libadalang' }}
+    # if: ${{ github.repository == 'AdaCore/libadalang' }}
 
     strategy:
       fail-fast: false
@@ -31,6 +32,10 @@ jobs:
           install: >-
             mingw64/mingw-w64-x86_64-libiconv
             mingw64/mingw-w64-x86_64-gmp
+      - name: Setup Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
       - name: Get libadalang
         uses: actions/checkout@v2
       - name: Get gprbuild for libgpr
@@ -39,11 +44,6 @@ jobs:
           repository: AdaCore/gprbuild
           path: gprbuild
           fetch-depth: 0  # To be able do `git revert`
-      - name: Revert a libgpr patch (MacOS X only)
-        # The latest libgpr doesn't support GNAT CE 2020, but on MacOS X we
-        # don't have GNAT CE 2021. Let's revert this commit for now.
-        if: ${{ runner.os == 'macOS' }}
-        run: git -C gprbuild revert --no-edit 3341766255bf5ab90fe05a8e162894b7830adca6
       - name: Get gnatcoll core
         uses: actions/checkout@v2
         with:
@@ -62,7 +62,10 @@ jobs:
           fetch-depth: 0  # all branches
       - name: Try to checkout langkit's branch
         shell: bash
-        run: (cd langkit; git checkout ${{ github.ref }} || true)
+        run: |
+          cd langkit
+          git checkout ${{ github.ref }} || true
+          pip install -r REQUIREMENTS.dev
       - uses: actions/cache@v2
         with:
           path: ./cached_gnat
@@ -75,14 +78,10 @@ jobs:
           install_dir: ./cached_gnat
       - name: Get GNAT Community 2020 toolchain
         if: ${{ runner.os == 'macOS' }}
-        uses: ada-actions/toolchain@ce2020
+        uses: reznikmm/toolchain@macos_ce2021
         with:
           distrib: community
           install_dir: ./cached_gnat
-      - name: Setup Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
       - name: Build Libadalang and its dependencies (Windows)
         if: ${{ runner.os == 'Windows' }}
         shell: msys2 {0}

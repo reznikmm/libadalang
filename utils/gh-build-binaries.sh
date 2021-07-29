@@ -17,7 +17,7 @@ if [ $RUNNER_OS = Linux ]; then
 else
    LIBRARY_TYPES="static"
 fi
-pip install -r langkit/REQUIREMENTS.dev
+# pip install -r langkit/REQUIREMENTS.dev
 pip install jsonschema
 pip install langkit/
 # gnat-ce installation is cached, so gnatcoll/gpr could be uninstalled already
