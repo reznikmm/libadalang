@@ -3,6 +3,7 @@ on:
     branches:
       - master
       - stable
+      - up-ubuntu
 name: Build binaries
 jobs:
   build:
@@ -11,13 +12,13 @@ jobs:
     # The only purpose of this workflow is to upload builds, so do not run it
     # in contexts when upload is impossible: only the official repository has
     # the secrets to upload binaries to Bintray.
-    if: ${{ github.repository == 'AdaCore/libadalang' }}
+    # if: ${{ github.repository == 'AdaCore/libadalang' }}
 
     strategy:
       fail-fast: false
       matrix: # Build debug and production
         debug: ['', 'debug']      # '' if production, 'debug' for debug
-        os: [macos-11, ubuntu-18.04, windows-latest]
+        os: [macos-11, ubuntu-20.04, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - run: git config --global core.autocrlf input
