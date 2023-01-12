@@ -2,6 +2,7 @@ on:
   push:
     branches:
       - master
+      - adasat
 name: Build binaries
 jobs:
   build:
@@ -10,7 +11,7 @@ jobs:
     # The only purpose of this workflow is to upload builds, so do not run it
     # in contexts when upload is impossible: only the official repository has
     # the secrets to upload binaries to Bintray.
-    if: ${{ github.repository == 'AdaCore/libadalang' }}
+    # if: ${{ github.repository == 'AdaCore/libadalang' }}
 
     strategy:
       fail-fast: false
@@ -64,6 +65,11 @@ jobs:
         with:
           repository: AdaCore/gprconfig_kb
           path: gpr2/gprconfig_kb
+      - name: Get AdaSAT
+        uses: actions/checkout@v2
+        with:
+          repository: AdaCore/AdaSAT
+          path: langkit/langkit/adasat
       - name: Try to checkout langkit's branch
         shell: bash
         run: (cd langkit; git checkout ${{ github.ref }} || true)
